@@ -51,6 +51,7 @@ public class ProductService {
 		// Condição ternaria tipo decode (categoryId == 0) ? null : categoryRepository.getOne(categoryId)
 		List<Category> categories = (categoryId == 0) ? null : Arrays.asList(categoryRepository.getOne(categoryId));
 		Page<Product> page = repository.find(categories, name, pageable);
+		repository.findProductsCategories(page.getContent());
 		return page.map(x -> new ProductDTO(x));
 	}
 
