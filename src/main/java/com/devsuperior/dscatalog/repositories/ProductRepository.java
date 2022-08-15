@@ -1,0 +1,28 @@
+package com.devsuperior.dscatalog.repositories;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.devsuperior.dscatalog.entities.Category;
+import com.devsuperior.dscatalog.entities.Product;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+
+	//Problema N+1 Consultas no Spring Data JPA (video youtube)
+	//FETCH não aceita paginação pois não acrescenta o comando LIMIT no SQL
+	@Query("SELECT obj FROM Product obj JOIN FETCH obj.categories WHERE obj IN :products")
+	List<Product> findProductsCategories(List<Product> products);
+
+	//Para passar encode utilizar inspecionar, console comando let x = encodeURIComponent("PC Gamer")
+	
+	@Query("SELECT DISTINCT obj FROM Product obj INNER JOIN obj.categories cats WHERE "
+			+ "(COALESCE(:categories) IS NULL OR cats IN :categories) AND "
+	        + "(LOWER(obj.name) LIKE LOWER(CONCAT('%',:name,'%')) )")
+	Page<Product> find(List<Category> categories, String name, Pageable pageable);
+}
